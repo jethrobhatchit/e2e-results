@@ -138,21 +138,6 @@ Error generating stack: `+n.message+`
   } else {
     run();
   }
-  var collapseObs = new MutationObserver(function(mutations) {
-    var shouldRun = false;
-    for (var i = 0; i < mutations.length; i++) {
-      if (mutations[i].addedNodes.length > 0) {
-        shouldRun = true;
-        break;
-      }
-    }
-    if (shouldRun) {
-      setTimeout(collapseSteps, 100);
-    }
-  });
-  setTimeout(function() {
-    collapseObs.observe(document.body, { childList: true, subtree: true });
-  }, 500);
 })();
 </script>
 

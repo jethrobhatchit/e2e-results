@@ -101,31 +101,58 @@ Error generating stack: `+n.message+`
   function hasVideo(container) {
     return container && container.querySelector && container.querySelector('video');
   }
+  function shouldCollapse(el) {
+    if (el.getAttribute('title') === 'Videos') return false;
+    var chip = el.closest('.chip');
+    if (chip && hasVideo(chip)) return false;
+    if (hasVideo(el)) return false;
+    var item = el.closest('[role="treeitem"]');
+    if (item && hasVideo(item)) return false;
+    return true;
+  }
   function collapseSteps() {
     document.querySelectorAll('details[open]').forEach(function(d) {
       if (!hasVideo(d)) d.removeAttribute('open');
     });
     document.querySelectorAll('[aria-expanded="true"]').forEach(function(el) {
+      if (!shouldCollapse(el)) return;
       var chip = el.closest('.chip');
-      if (chip && hasVideo(chip)) return;
-      if (hasVideo(el)) return;
-      var item = el.closest('[role="treeitem"]');
-      if (item && hasVideo(item)) return;
-      if (el.getAttribute('title') === 'Videos') return;
-      var toggle = item ? (item.querySelector('[role="button"]') || item) : (el.previousElementSibling || el);
-      if (toggle && typeof toggle.click === 'function') toggle.click();
+      var toggle = chip ? chip.querySelector('.chip-header[role="button"]') : el;
+      if (!toggle) toggle = el;
+      if (toggle && typeof toggle.click === 'function') {
+        try {
+          toggle.click();
+        } catch (e) {}
+      }
     });
   }
   function run() {
     collapseSteps();
-    setTimeout(collapseSteps, 600);
+    setTimeout(collapseSteps, 300);
+    setTimeout(collapseSteps, 800);
     setTimeout(collapseSteps, 1500);
+    setTimeout(collapseSteps, 2500);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', run);
   } else {
     run();
   }
+  var collapseObs = new MutationObserver(function(mutations) {
+    var shouldRun = false;
+    for (var i = 0; i < mutations.length; i++) {
+      if (mutations[i].addedNodes.length > 0) {
+        shouldRun = true;
+        break;
+      }
+    }
+    if (shouldRun) {
+      setTimeout(collapseSteps, 100);
+    }
+  });
+  setTimeout(function() {
+    collapseObs.observe(document.body, { childList: true, subtree: true });
+  }, 500);
 })();
 </script>
 
